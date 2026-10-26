@@ -54,6 +54,10 @@ resource "restful_resource" "hostnames" {
   update_method = "PUT"
   delete_method = "DELETE"
   body          = [for h in var.hostnames : { fqdn = h.fqdn, ssl_cn = h.ssl_cn }]
+
+  # Fail closed: publish the hostnames only once the allowlist is in place, and
+  # on destroy remove them before the allowlist.
+  depends_on = [restful_resource.allowlist]
 }
 
 resource "restful_resource" "flags" {
@@ -62,6 +66,9 @@ resource "restful_resource" "flags" {
   update_method = "PUT"
   delete_method = "DELETE"
   body          = var.flags
+
+  # Fail closed, as for hostnames: enable the site only behind its allowlist.
+  depends_on = [restful_resource.allowlist]
 }
 
 resource "restful_resource" "allowlist" {

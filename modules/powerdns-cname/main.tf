@@ -47,7 +47,8 @@ resource "powerdns_record" "cname" {
 
   lifecycle {
     precondition {
-      condition     = endswith("${each.key}.", ".${var.zone}")
+      # DNS names are case-insensitive; the leading dot keeps the check on a label boundary.
+      condition     = endswith(lower("${each.key}."), lower(".${var.zone}"))
       error_message = "Hostname ${each.key} is not in the zone ${var.zone}."
     }
   }

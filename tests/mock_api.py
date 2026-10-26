@@ -106,6 +106,8 @@ class Handler(BaseHTTPRequestHandler):
             return self.reply(200, res["settings"][setting])
         if self.command == "PUT":
             body = self.read_json()
+            if setting == "predefined-allowlist" and body.get("key") == "rejected_by_mock":
+                return self.reply(400, {"error": "unknown predefined allowlist"})
             if setting == "backend":
                 err = backend_error(body)
                 if err:

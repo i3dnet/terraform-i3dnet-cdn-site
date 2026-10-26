@@ -103,12 +103,23 @@ expect_invalid interval_ms=10000 'at least 15000'
 expect_invalid strategy=NO_STRATEGY 'strategy must be HASH, FALLBACK or RANDOM'
 expect_invalid location=XX 'location must be one of'
 expect_invalid hostname=app.other.test 'is not in the zone'
+run site plan -var hostname=App.Example.test || fail "a hostname in another case than its zone passes the zone check"
+ok "the zone check ignores case"
 
 run site destroy -auto-approve || fail "destroy the site"
 [ "$(get_status "$path")" = 404 ] || fail "destroy deletes the CDN resource"
 rrsets=$(curl -s "http://127.0.0.1:$port/api/v1/servers/localhost/zones/example.test." | jq '.rrsets | length')
 [ "$rrsets" = 0 ] || fail "destroy deletes the CNAME"
 ok "destroy deletes the resource and the CNAME"
+
+# A rejected allowlist leaves the site unpublished -----------------------------
+
+before=$(wc -l <"$work/mock.log")
+if run site apply -auto-approve -var allowlist=rejected_by_mock; then fail "apply with a rejected allowlist fails"; fi
+published=$(tail -n +"$((before + 1))" "$work/mock.log" | grep -cE 'mock: PUT .*/(hostnames|flags)$' || true)
+[ "$published" = 0 ] || fail "hostnames and flags wait for the allowlist (saw $published PUTs)"
+ok "a rejected allowlist leaves the site unpublished (no hostnames, flags off)"
+run site destroy -auto-approve -var allowlist=rejected_by_mock || fail "destroy after the rejected allowlist"
 
 # The CDN module alone, with no PowerDNS provider configured -------------------
 

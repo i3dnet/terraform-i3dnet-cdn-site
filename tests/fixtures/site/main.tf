@@ -28,6 +28,11 @@ variable "interval_ms" {
   default = 15000
 }
 
+variable "allowlist" {
+  type    = string
+  default = "i3d_office"
+}
+
 variable "hostname" {
   type    = string
   default = "app.example.test"
@@ -63,7 +68,7 @@ module "site" {
   }]
   strategy             = var.strategy
   flags                = { auth_pass_through = true }
-  predefined_allowlist = "i3d_office"
+  predefined_allowlist = var.allowlist
 }
 
 module "dns" {

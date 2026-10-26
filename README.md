@@ -95,6 +95,8 @@ Each setting is a `restful_resource` created with `PUT` and read with `GET` on t
           ~ enabled = false -> true
 ```
 
+With `predefined_allowlist` set, the hostnames and flags are applied only after the allowlist. If the allowlist is rejected, a site meant to be private is never published.
+
 ## Adopting a site configured with `restful_operation`
 
 Sites configured with `restful_operation` (write-only, no drift detection) can move onto the module without touching the live site.
